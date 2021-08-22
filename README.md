@@ -1,5 +1,7 @@
 # terracamp-delta0x
 
+delta0x project on terracamp hackathon
+
 # helpful resources
 
 - setting up local computer for terra 
