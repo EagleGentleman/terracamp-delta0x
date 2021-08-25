@@ -33,4 +33,19 @@ https://docs.terra.money/quickstart.html#create-a-new-wallet
 finding the right mainnet, testnet urls
 https://github.com/terra-money/core#node-setup
 
-- 
+### Test a deployment with spacecamp-2021-workshop folder
+
+add to your `.bash_profile` or `.zshrc`
+```
+export TERRA_MNEMOMIC_KEY="<24-words-mnemomic>"
+```
+
+then, go to `./spacecamp-2021-workshop/scripts`
+
+run,
+```
+npm install
+npm install -g ts-node
+ts-node main-ts
+```
+
