@@ -2,12 +2,8 @@
 
 delta0x project on terracamp hackathon
 
-# helpful resources
+# getting started
 
-- setting up local computer for terra 
-https://docs.terra.money/contracts/tutorial/
-
-- eth vs terra dev tools
-![Getting Started](./readme-images/devtools.png)
+see [getting started folder](./getting-started/README.md)
 
 
