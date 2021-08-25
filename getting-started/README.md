@@ -27,7 +27,7 @@ Best process rn is using terra js to do the deployments
 video: https://youtu.be/hU5HWCL7WWc?t=3817
 code: https://github.com/larry0x/spacecamp-2021-workshop
 
-Create the testnet wallet to deploy from
+Create the testnet wallet to deploy from & faucet
 https://docs.terra.money/quickstart.html#create-a-new-wallet
 
 finding the right mainnet, testnet urls

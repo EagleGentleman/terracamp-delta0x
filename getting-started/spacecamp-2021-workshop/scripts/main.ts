@@ -23,8 +23,8 @@ const { expect } = chai;
 // swap to deploy to testnet
 // const terra = new LocalTerra();
 const terra = new LCDClient({
-  chainID: 'bombay-10',
-  URL: 'https://bombay-lcd.terra.dev'
+  chainID: 'tequila-0004',
+  URL: 'https://tequila-lcd.terra.dev'
 });
 
 // const deployer = terra.wallets.test1;
