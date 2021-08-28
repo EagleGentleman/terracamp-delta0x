@@ -4,6 +4,6 @@ delta0x project on terracamp hackathon
 
 # getting started
 
-see [getting started folder](./getting-started/README.md)
+see [getting started](./getting-started/README.md)
 
 
