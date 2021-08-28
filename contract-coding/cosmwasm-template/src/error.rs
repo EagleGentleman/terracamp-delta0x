@@ -8,6 +8,13 @@ pub enum ContractError {
 
     #[error("Unauthorized")]
     Unauthorized {},
-    // Add any other custom errors you like here.
-    // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
+
+    #[error("Escrow expired (end_height {end_height:?} end_time {end_time:?})")]
+    Expired {
+        end_height: Option<u64>,
+        end_time: Option<u64>,
+    },
+
+    #[error("Escrow not expired")]
+    NotExpired {},
 }
