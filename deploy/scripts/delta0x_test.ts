@@ -10,7 +10,8 @@ import {
 } from "@terra-money/terra.js";
 import * as fs from "fs";
 
-const DEPLOYED_DELTA0X_ADDR = "terra1q8w3qe44dzus9ew84qpjq4dnzg5j734gx0az07";
+const DEPLOYED_DELTA0X_ADDR = "terra19t043qce5mgwu7u0gel2fd3g4jx46uq5zgyup5";
+// https://finder.terra.money/tequila-0004/address/terra19t043qce5mgwu7u0gel2fd3g4jx46uq5zgyup5
 
 (async () => {
   try {
@@ -37,12 +38,8 @@ const DEPLOYED_DELTA0X_ADDR = "terra1q8w3qe44dzus9ew84qpjq4dnzg5j734gx0az07";
       DEPLOYED_DELTA0X_ADDR,
       {
         deposit: {},
-      }
-
-      // coins
-      // {
-      //   [`${market}`]: new Int(new Dec(amount).mul(1000000)).toString(),
-      // },
+      },
+      { uusd: 10000 } // init coins
     );
     const depositTx = await wallet.createAndSignTx({
       msgs: [deposit],

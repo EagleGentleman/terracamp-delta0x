@@ -71,6 +71,8 @@ import * as fs from "fs";
       instantiate_contract: { contract_address },
     } = instantiateTxResult.logs[0].eventsByType;
 
+    console.log("STEVENDEBUG instantiateTxResult ", instantiateTxResult)
+
     // deposit. see delta0x_test
   } catch (e) {
     console.log("STEVENDEBUG error ", e);

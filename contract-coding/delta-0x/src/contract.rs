@@ -1,6 +1,7 @@
+use cosmwasm_bignumber::{Decimal256, Uint256};
 use cosmwasm_std::{
     to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier, StdError,
-    StdResult, Storage,
+    StdResult, Storage, WasmMsg
 };
 
 use crate::msg::{CountResponse, HandleMsg, InitMsg, QueryMsg};
@@ -34,6 +35,26 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
     //     state.count = count;
     //     Ok(state)
     // })?;
+    let state = config_read(&deps.storage).load()?;
+
+    let deposit_amount: Uint256 = env
+        .message
+        .sent_funds
+        .iter()
+        .find(|c| c.denom == "uusd")
+        .map(|c| Uint256::from(c.amount))
+        .unwrap_or_else(Uint256::zero);
+
+    // Cannot deposit zero amount
+    if deposit_amount.is_zero() {
+        return Err(StdError::generic_err(format!(
+            "Deposit amount must be greater than 0 {}",
+            "uusd",
+        )));
+    }
+
+    
+
     Ok(HandleResponse::default())
 }
 
