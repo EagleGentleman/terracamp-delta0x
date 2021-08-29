@@ -10,8 +10,8 @@ import {
 } from "@terra-money/terra.js";
 import * as fs from "fs";
 
-const DEPLOYED_DELTA0X_ADDR = "terra19t043qce5mgwu7u0gel2fd3g4jx46uq5zgyup5";
-// https://finder.terra.money/tequila-0004/address/terra19t043qce5mgwu7u0gel2fd3g4jx46uq5zgyup5
+const DEPLOYED_DELTA0X_ADDR = "terra16u2qj4mxstd85zrfmt40wvw0a5enqw4mmjwcxq";
+// https://finder.terra.money/tequila-0004/address/terra16u2qj4mxstd85zrfmt40wvw0a5enqw4mmjwcxq
 
 (async () => {
   try {

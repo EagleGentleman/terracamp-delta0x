@@ -1,10 +1,10 @@
 use cosmwasm_bignumber::{Decimal256, Uint256};
 use cosmwasm_std::{
     to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier, StdError,
-    StdResult, Storage, WasmMsg
+    StdResult, Storage, WasmMsg, HumanAddr, Coin, CosmosMsg, BankMsg, Uint128
 };
 
-use crate::msg::{CountResponse, HandleMsg, InitMsg, QueryMsg};
+use crate::msg::{CountResponse, HandleMsg, AnchorHandleMsg, InitMsg, QueryMsg};
 use crate::state::{config, config_read, State};
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
@@ -37,13 +37,13 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
     // })?;
     let state = config_read(&deps.storage).load()?;
 
-    let deposit_amount: Uint256 = env
+    let deposit_amount: Uint128 = env
         .message
         .sent_funds
         .iter()
         .find(|c| c.denom == "uusd")
-        .map(|c| Uint256::from(c.amount))
-        .unwrap_or_else(Uint256::zero);
+        .map(|c| Uint128::from(c.amount))
+        .unwrap_or_else(Uint128::zero);
 
     // Cannot deposit zero amount
     if deposit_amount.is_zero() {
@@ -53,9 +53,51 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
         )));
     }
 
-    
+    // TODO: add a function to update anchor smart contract address
+    // contract_addr from https://docs.anchorprotocol.com/smart-contracts/deployed-contracts
+    let msg = AnchorHandleMsg::DepositStable {};
 
-    Ok(HandleResponse::default())
+    let exec = WasmMsg::Execute {
+        contract_addr: HumanAddr("terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal".to_string()),
+        msg: to_binary(&msg)?,
+        send: vec![Coin {
+            denom: "uusd".to_string(),
+            amount: deposit_amount,
+        }],
+    };
+
+    // Ok(vec![SubMsg::new(exec)])
+
+    Ok(HandleResponse {
+        messages: vec![CosmosMsg::Wasm(exec)],
+        data: None,
+        log: vec![],
+    })
+
+    // Ok(HandleResponse {
+    //     messages: vec![
+    //         CosmosMsg::Bank(BankMsg::Send {
+    //             from_address: env.contract.address,
+    //             to_address: HumanAddr("terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal".to_string()),
+    //             amount: vec![Coin {
+    //                 denom: config.stable_denom,
+    //                 amount: redeem_amount.into(),
+    //             }],
+    //         })
+    //     ],
+    //     data: None,
+    // })
+
+    // CosmosMsg::Bank(BankMsg::Send {
+    //     from_address: env.contract.address,
+    //     to_address: HumanAddr("terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal".to_string()),
+    //     amount: vec![Coin {
+    //         denom: config.stable_denom,
+    //         amount: redeem_amount.into(),
+    //     }],
+    // })
+
+    // Ok(HandleResponse::default())
 }
 
 pub fn handle<S: Storage, A: Api, Q: Querier>(
