@@ -48,10 +48,8 @@ import * as fs from "fs";
       store_code: { code_id },
     } = storeCodeTxResult.logs[0].eventsByType;
 
-    console.log("STEVENDEBUG code_id", code_id);
-
+    // instantiation
     const code_id_num = Number.parseFloat(code_id[0]);
-
     const instantiate = new MsgInstantiateContract(
       wallet.key.accAddress,
       code_id_num,
@@ -60,30 +58,20 @@ import * as fs from "fs";
       },
       // { uluna: 100, ukrw: 100 } // init coins
     );
-
-    console.log("STEVENDEBUG instantiate", instantiate);
-
     const instantiateTx = await wallet.createAndSignTx({
       msgs: [instantiate],
     });
-
-    console.log("STEVENDEBUG instantiateTx", instantiateTx);
-
     const instantiateTxResult = await terra.tx.broadcast(instantiateTx);
-
-    console.log("STEVENDEBUG instantiateTxResult ", instantiateTxResult);
-
-    console.log(instantiateTxResult);
-
     if (isTxError(instantiateTxResult)) {
       throw new Error(
         `instantiate failed. code: ${instantiateTxResult.code}, codespace: ${instantiateTxResult.codespace}, raw_log: ${instantiateTxResult.raw_log}`
       );
     }
-
     const {
       instantiate_contract: { contract_address },
     } = instantiateTxResult.logs[0].eventsByType;
+
+    // deposit. see delta0x_test
   } catch (e) {
     console.log("STEVENDEBUG error ", e);
   }
