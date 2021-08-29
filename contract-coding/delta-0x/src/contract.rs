@@ -6,6 +6,7 @@ use cosmwasm_std::{
 
 use crate::msg::{CountResponse, HandleMsg, AnchorHandleMsg, InitMsg, QueryMsg};
 use crate::state::{config, config_read, State};
+use moneymarket::querier::{deduct_tax, query_balance, query_supply};
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -60,10 +61,10 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
     let exec = WasmMsg::Execute {
         contract_addr: HumanAddr("terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal".to_string()),
         msg: to_binary(&msg)?,
-        send: vec![Coin {
+        send: vec![deduct_tax(&deps, Coin {
             denom: "uusd".to_string(),
-            amount: deposit_amount,
-        }],
+            amount: deposit_amount ,
+        })?],
     };
 
     // Ok(vec![SubMsg::new(exec)])
