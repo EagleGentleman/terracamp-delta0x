@@ -4,8 +4,8 @@ import { Mirror } from "@mirror-protocol/mirror.js";
 (async () => {
   try {
     const terra = new LCDClient({
-      chainID: "tequila-0004",
-      URL: "https://tequila-lcd.terra.dev",
+      chainID: "columbus-4",
+      URL: "https://lcd.terra.dev",
     });
 
     const mk = new MnemonicKey({
