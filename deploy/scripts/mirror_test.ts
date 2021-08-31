@@ -29,9 +29,13 @@ import { Mirror } from "@mirror-protocol/mirror.js";
     const wallet = terra.wallet(mk);
 
     const positionIdx = await mirror.mint.getNextPositionIdx();
+    const currentPositions = await mirror.mint.getPositions(mk.accAddress)
+
     // cosnt asset = await mirror.mint.getAssetConfig('terra18yx7ff8knc98p07pdkhm3u36wufaeacv47fuha')
 
     console.log("STEVENDEBUG positionIdx ", positionIdx);
+    console.log("STEVENDEBUG currentPositions ", currentPositions);
+
     const austContractAddrTestnet = "terra1ajt556dpzvjwl0kl5tzku3fc3p3knkg9mkv8jl";
     const mQQQContractAddrTestnet = "terra12s2h8vlztjwu440khpc0063p34vm7nhu25w4p9";
     const mTSLAContractAddrMainnet = "terra14y5affaarufk3uscy2vr6pe6w6zqf2wpjzn5sh";
@@ -39,16 +43,18 @@ import { Mirror } from "@mirror-protocol/mirror.js";
     const asset = await mirror.mint.getAssetConfig(mTSLAContractAddrMainnet)
     console.log("STEVENDEBUG asset ", asset);
 
-    const deposit = mirror.mint.deposit(positionIdx.next_position_idx, {
+    // const test1 = mirror.mint.
+
+    const deposit = mirror.mint.deposit(0, {
       info: {
-        token: {
-          contract_addr: mTSLAContractAddrMainnet,
-        },
-        // native_token: {
-        //     denom: 'uusd'
-        // }
+        // token: {
+        //   contract_addr: mTSLAContractAddrMainnet,
+        // },
+        native_token: {
+            denom: 'uusd'
+        }
       },
-      amount: "0.01",
+      amount: "1",
     });
 
     console.log("STEVENDEBUG deposit ", deposit);
