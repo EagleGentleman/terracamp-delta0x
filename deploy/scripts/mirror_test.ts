@@ -79,8 +79,8 @@ import { Mirror } from "@mirror-protocol/mirror.js";
     const poolUst = Math.trunc(poolAsset * poolRatio);
 
     // source: https://github.com/Mirror-Protocol/mirror.js/blob/dbbac43e0fb71c9b6476893f9f3af71f89ff27d4/integration-test/testUserFlow.ts
-    const increaseLiqAllowance = await mirror.assets['mETH'].token.increaseAllowance(mEthContractAddrMainnet, poolAsset)
-    // console.log("STEVENDEBUG increaseLiqAllowance ", increaseLiqAllowance);
+    const mETHPair = mirror.assets.mETH.pair.contractAddress || ''
+    const increaseLiqAllowance = await mirror.assets['mETH'].token.increaseAllowance(mETHPair, poolAsset)
     const increaseLiqAllowanceTx = await wallet?.createAndSignTx({
       msgs: [increaseLiqAllowance],
     });
