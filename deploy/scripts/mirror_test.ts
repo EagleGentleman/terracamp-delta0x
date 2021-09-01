@@ -72,34 +72,40 @@ import { Mirror } from "@mirror-protocol/mirror.js";
     // take the borrowed asset and lp it
 
     // replace this with the mint amount (see log from openPositionTxResult)
-    const mintAmount = 137
+    const mintAmount = 137;
     const poolRes = await mirror.assets.mETH.pair.getPool();
-    let poolRatio = parseInt(poolRes.assets[0].amount) / parseInt(poolRes.assets[1].amount);
+    let poolRatio =
+      parseInt(poolRes.assets[0].amount) / parseInt(poolRes.assets[1].amount);
     const poolAsset = Math.trunc(mintAmount / 2) - 1;
     const poolUst = Math.trunc(poolAsset * poolRatio);
 
     // source: https://github.com/Mirror-Protocol/mirror.js/blob/dbbac43e0fb71c9b6476893f9f3af71f89ff27d4/integration-test/testUserFlow.ts
-    const mETHPair = mirror.assets.mETH.pair.contractAddress || ''
-    const increaseLiqAllowance = await mirror.assets['mETH'].token.increaseAllowance(mETHPair, poolAsset)
+    const mETHPair = mirror.assets.mETH.pair.contractAddress || "";
+    const increaseLiqAllowance = await mirror.assets[
+      "mETH"
+    ].token.increaseAllowance(mETHPair, poolAsset);
     const increaseLiqAllowanceTx = await wallet?.createAndSignTx({
       msgs: [increaseLiqAllowance],
     });
     const increaseLiqAllowanceResult = await mirror.lcd?.tx.broadcast(
       increaseLiqAllowanceTx as StdTx
     );
-    console.log("STEVENDEBUG increaseLiqAllowanceResult ", increaseLiqAllowanceResult);
+    console.log(
+      "STEVENDEBUG increaseLiqAllowanceResult ",
+      increaseLiqAllowanceResult
+    );
 
-    const provideLiquidity = await mirror.assets['mETH'].pair.provideLiquidity([
+    const provideLiquidity = await mirror.assets["mETH"].pair.provideLiquidity([
       {
-        info: { native_token: { denom: 'uusd' } },
+        info: { native_token: { denom: "uusd" } },
         // 1 UST
-        amount: poolUst.toString()
+        amount: poolUst.toString(),
       },
       {
         info: { token: { contract_addr: mEthContractAddrMainnet } },
-        amount: poolAsset.toString()
-      }
-    ])
+        amount: poolAsset.toString(),
+      },
+    ]);
     console.log("STEVENDEBUG provideLiquidity ", provideLiquidity);
 
     const provideLiquidityTx = await wallet?.createAndSignTx({
@@ -109,8 +115,6 @@ import { Mirror } from "@mirror-protocol/mirror.js";
       provideLiquidityTx as StdTx
     );
     console.log("STEVENDEBUG provideLiquidityResult ", provideLiquidityResult);
-
-
   } catch (e) {
     console.log("STEVENDEBUG error ", e);
   }
