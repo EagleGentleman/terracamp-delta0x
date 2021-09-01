@@ -20,13 +20,10 @@ import { Mirror } from "@mirror-protocol/mirror.js";
     const result = await mirror.factory.getConfig();
     console.log("STEVENDEBUG result ", result);
 
-    // const wallet = mirror.lcd?.wallet(mirror.key);
     const wallet = terra.wallet(mk);
 
     const positionIdx = await mirror.mint.getNextPositionIdx();
     const currentPositions = await mirror.mint.getPositions(mk.accAddress);
-
-    // cosnt asset = await mirror.mint.getAssetConfig('terra18yx7ff8knc98p07pdkhm3u36wufaeacv47fuha')
 
     console.log("STEVENDEBUG positionIdx ", positionIdx);
     console.log("STEVENDEBUG currentPositions ", currentPositions);
@@ -61,7 +58,6 @@ import { Mirror } from "@mirror-protocol/mirror.js";
           contract_addr: mEthContractAddrMainnet,
         },
       },
-      // openPositionCollateral.info,
       2.1
     );
     console.log("STEVENDEBUG openPosition ", JSON.stringify(openPosition));
@@ -72,6 +68,53 @@ import { Mirror } from "@mirror-protocol/mirror.js";
       openPositionTx as StdTx
     );
     console.log("STEVENDEBUG openPositionTxResult ", openPositionTxResult);
+
+    // take the borrowed asset and lp it
+
+    // replace this with the mint amount (see log from openPositionTxResult)
+    const mintAmount = 137;
+    const poolRes = await mirror.assets.mETH.pair.getPool();
+    let poolRatio =
+      parseInt(poolRes.assets[0].amount) / parseInt(poolRes.assets[1].amount);
+    const poolAsset = Math.trunc(mintAmount / 2) - 1;
+    const poolUst = Math.trunc(poolAsset * poolRatio);
+
+    // source: https://github.com/Mirror-Protocol/mirror.js/blob/dbbac43e0fb71c9b6476893f9f3af71f89ff27d4/integration-test/testUserFlow.ts
+    const mETHPair = mirror.assets.mETH.pair.contractAddress || "";
+    const increaseLiqAllowance = await mirror.assets[
+      "mETH"
+    ].token.increaseAllowance(mETHPair, poolAsset);
+    const increaseLiqAllowanceTx = await wallet?.createAndSignTx({
+      msgs: [increaseLiqAllowance],
+    });
+    const increaseLiqAllowanceResult = await mirror.lcd?.tx.broadcast(
+      increaseLiqAllowanceTx as StdTx
+    );
+    console.log(
+      "STEVENDEBUG increaseLiqAllowanceResult ",
+      increaseLiqAllowanceResult
+    );
+
+    const provideLiquidity = await mirror.assets["mETH"].pair.provideLiquidity([
+      {
+        info: { native_token: { denom: "uusd" } },
+        // 1 UST
+        amount: poolUst.toString(),
+      },
+      {
+        info: { token: { contract_addr: mEthContractAddrMainnet } },
+        amount: poolAsset.toString(),
+      },
+    ]);
+    console.log("STEVENDEBUG provideLiquidity ", provideLiquidity);
+
+    const provideLiquidityTx = await wallet?.createAndSignTx({
+      msgs: [provideLiquidity],
+    });
+    const provideLiquidityResult = await mirror.lcd?.tx.broadcast(
+      provideLiquidityTx as StdTx
+    );
+    console.log("STEVENDEBUG provideLiquidityResult ", provideLiquidityResult);
   } catch (e) {
     console.log("STEVENDEBUG error ", e);
   }
