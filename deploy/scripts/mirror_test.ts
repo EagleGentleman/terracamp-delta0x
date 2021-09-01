@@ -71,6 +71,8 @@ import { Mirror } from "@mirror-protocol/mirror.js";
     const openPositionTxResult = await mirror.lcd?.tx.broadcast(openPositionTx as StdTx);
     console.log("STEVENDEBUG openPositionTxResult ", openPositionTxResult);
 
+    return
+
     const asset = await mirror.mint.getAssetConfig(mTSLAContractAddrMainnet)
     console.log("STEVENDEBUG asset ", asset);
 
