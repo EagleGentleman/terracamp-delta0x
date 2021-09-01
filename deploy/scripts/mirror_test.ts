@@ -17,17 +17,9 @@ import { Mirror } from "@mirror-protocol/mirror.js";
       key: mk,
     });
 
-    const result = await mirror.factory.getConfig();
-    console.log("STEVENDEBUG result ", result);
-
     const wallet = terra.wallet(mk);
 
-    const positionIdx = await mirror.mint.getNextPositionIdx();
-    const currentPositions = await mirror.mint.getPositions(mk.accAddress);
-
-    console.log("STEVENDEBUG positionIdx ", positionIdx);
-    console.log("STEVENDEBUG currentPositions ", currentPositions);
-
+    // deposit aUST and mint mETH
     const austContractAddrTestnet =
       "terra1ajt556dpzvjwl0kl5tzku3fc3p3knkg9mkv8jl";
     const mQQQContractAddrTestnet =
@@ -38,15 +30,17 @@ import { Mirror } from "@mirror-protocol/mirror.js";
       "terra1kscs6uhrqwy6rx5kuw5lwpuqvm3t6j2d6uf2lp";
     const mEthContractAddrMainnet =
       "terra1dk3g53js3034x4v5c3vavhj2738une880yu6kx";
+    const aUstContractAddrMainnet =
+      "terra1hzh9vpxhsk8253se0vv5jj6etdvxu3nv8z07zu";
 
     const openPositionCollateral = {
       info: {
-        // token: {
-        //   contract_addr: mTSLAContractAddrMainnet,
-        // },
-        native_token: {
-          denom: "uusd",
+        token: {
+          contract_addr: aUstContractAddrMainnet,
         },
+        // native_token: {
+        //   denom: "uusd",
+        // },
       },
       // 1 UST
       amount: int`1000000`.toString(),
@@ -60,7 +54,6 @@ import { Mirror } from "@mirror-protocol/mirror.js";
       },
       2.1
     );
-    console.log("STEVENDEBUG openPosition ", JSON.stringify(openPosition));
     const openPositionTx = await wallet?.createAndSignTx({
       msgs: [openPosition],
     });
@@ -70,8 +63,7 @@ import { Mirror } from "@mirror-protocol/mirror.js";
     console.log("STEVENDEBUG openPositionTxResult ", openPositionTxResult);
 
     // take the borrowed asset and lp it
-
-    // replace this with the mint amount (see log from openPositionTxResult)
+    // replace mintAmount with the mint amount (see log from openPositionTxResult)
     const mintAmount = 137;
     const poolRes = await mirror.assets.mETH.pair.getPool();
     let poolRatio =
@@ -106,8 +98,6 @@ import { Mirror } from "@mirror-protocol/mirror.js";
         amount: poolAsset.toString(),
       },
     ]);
-    console.log("STEVENDEBUG provideLiquidity ", provideLiquidity);
-
     const provideLiquidityTx = await wallet?.createAndSignTx({
       msgs: [provideLiquidity],
     });
@@ -119,33 +109,3 @@ import { Mirror } from "@mirror-protocol/mirror.js";
     console.log("STEVENDEBUG error ", e);
   }
 })();
-
-/*
-// old deposit code (not working, needs tweaking)
-
-const asset = await mirror.mint.getAssetConfig(mTSLAContractAddrMainnet)
-console.log("STEVENDEBUG asset ", asset);
-
-// const test1 = mirror.mint.
-
-const deposit = mirror.mint.deposit(0, {
-  info: {
-    // token: {
-    //   contract_addr: mTSLAContractAddrMainnet,
-    // },
-    native_token: {
-        denom: 'uusd'
-    }
-  },
-  amount: "1",
-});
-
-console.log("STEVENDEBUG deposit ", deposit);
-
-const depositTx = await wallet?.createAndSignTx({
-    msgs: [deposit],
-});
-const depositTxResult = await mirror.lcd?.tx.broadcast(depositTx as StdTx);
-
-console.log("STEVENDEBUG depositTxResult ", depositTxResult);
-*/
