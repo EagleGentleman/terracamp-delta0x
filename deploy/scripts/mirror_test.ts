@@ -1,4 +1,4 @@
-import { LCDClient, MnemonicKey, StdTx } from "@terra-money/terra.js";
+import { int, LCDClient, MnemonicKey, StdTx } from "@terra-money/terra.js";
 import { Mirror } from "@mirror-protocol/mirror.js";
 
 (async () => {
@@ -39,6 +39,7 @@ import { Mirror } from "@mirror-protocol/mirror.js";
     const austContractAddrTestnet = "terra1ajt556dpzvjwl0kl5tzku3fc3p3knkg9mkv8jl";
     const mQQQContractAddrTestnet = "terra12s2h8vlztjwu440khpc0063p34vm7nhu25w4p9";
     const mTSLAContractAddrMainnet = "terra14y5affaarufk3uscy2vr6pe6w6zqf2wpjzn5sh";
+    const mSLVContractAddrMainnet = "terra1kscs6uhrqwy6rx5kuw5lwpuqvm3t6j2d6uf2lp";
 
     const openPositionCollateral = {
       info: {
@@ -49,19 +50,19 @@ import { Mirror } from "@mirror-protocol/mirror.js";
             denom: 'uusd'
         }
       },
-      amount: "2"
+      amount: int`5`.toString()
     }
     const openPosition = await mirror.mint.openPosition(
       openPositionCollateral,
-      // {
-      //   token: {
-      //     contract_addr: mTSLAContractAddrMainnet,
-      //   },
-      // },
-      openPositionCollateral.info,
-      1.7,
+      {
+        token: {
+          contract_addr: mSLVContractAddrMainnet,
+        },
+      },
+      // openPositionCollateral.info,
+      1.5,
     )
-    console.log("STEVENDEBUG openPosition ", openPosition);
+    console.log("STEVENDEBUG openPosition ", JSON.stringify(openPosition));
     const openPositionTx = await wallet?.createAndSignTx({
         msgs: [openPosition],
     });
