@@ -40,6 +40,34 @@ import { Mirror } from "@mirror-protocol/mirror.js";
     const mQQQContractAddrTestnet = "terra12s2h8vlztjwu440khpc0063p34vm7nhu25w4p9";
     const mTSLAContractAddrMainnet = "terra14y5affaarufk3uscy2vr6pe6w6zqf2wpjzn5sh";
 
+    const openPositionCollateral = {
+      info: {
+        // token: {
+        //   contract_addr: mTSLAContractAddrMainnet,
+        // },
+        native_token: {
+            denom: 'uusd'
+        }
+      },
+      amount: "2"
+    }
+    const openPosition = await mirror.mint.openPosition(
+      openPositionCollateral,
+      // {
+      //   token: {
+      //     contract_addr: mTSLAContractAddrMainnet,
+      //   },
+      // },
+      openPositionCollateral.info,
+      1.7,
+    )
+    console.log("STEVENDEBUG openPosition ", openPosition);
+    const openPositionTx = await wallet?.createAndSignTx({
+        msgs: [openPosition],
+    });
+    const openPositionTxResult = await mirror.lcd?.tx.broadcast(openPositionTx as StdTx);
+    console.log("STEVENDEBUG openPositionTxResult ", openPositionTxResult);
+
     const asset = await mirror.mint.getAssetConfig(mTSLAContractAddrMainnet)
     console.log("STEVENDEBUG asset ", asset);
 
