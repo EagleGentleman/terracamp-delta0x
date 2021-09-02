@@ -1,4 +1,4 @@
-use cosmwasm_std::{Binary, Decimal, Uint128};
+use cosmwasm_std::{Binary, Decimal, HumanAddr, Uint128};
 use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -7,12 +7,13 @@ use std::fmt;
 use crate::common::OrderBy;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {
-    pub mirror_token: String,
+pub struct InitMsg {
+    pub mirror_token: HumanAddr,
     pub quorum: Decimal,
     pub threshold: Decimal,
     pub voting_period: u64,
     pub effective_delay: u64,
+    pub expiration_period: u64,
     pub proposal_deposit: Uint128,
     pub voter_weight: Decimal,
     pub snapshot_period: u64,
@@ -20,14 +21,15 @@ pub struct InstantiateMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum ExecuteMsg {
+pub enum HandleMsg {
     Receive(Cw20ReceiveMsg),
     UpdateConfig {
-        owner: Option<String>,
+        owner: Option<HumanAddr>,
         quorum: Option<Decimal>,
         threshold: Option<Decimal>,
         voting_period: Option<u64>,
         effective_delay: Option<u64>,
+        expiration_period: Option<u64>,
         proposal_deposit: Option<Uint128>,
         voter_weight: Option<Decimal>,
         snapshot_period: Option<u64>,
@@ -52,6 +54,9 @@ pub enum ExecuteMsg {
     ExecutePoll {
         poll_id: u64,
     },
+    ExpirePoll {
+        poll_id: u64,
+    },
     SnapshotPoll {
         poll_id: u64,
     },
@@ -68,7 +73,7 @@ pub enum Cw20HookMsg {
         title: String,
         description: String,
         link: Option<String>,
-        execute_msg: Option<PollExecuteMsg>,
+        execute_msg: Option<ExecuteMsg>,
     },
     /// Deposit rewards to be distributed among stakers and voters
     DepositReward {},
@@ -76,8 +81,8 @@ pub enum Cw20HookMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct PollExecuteMsg {
-    pub contract: String,
+pub struct ExecuteMsg {
+    pub contract: HumanAddr,
     pub msg: Binary,
 }
 
@@ -87,7 +92,7 @@ pub enum QueryMsg {
     Config {},
     State {},
     Staker {
-        address: String,
+        address: HumanAddr,
     },
     Poll {
         poll_id: u64,
@@ -100,16 +105,16 @@ pub enum QueryMsg {
     },
     Voter {
         poll_id: u64,
-        address: String,
+        address: HumanAddr,
     },
     Voters {
         poll_id: u64,
-        start_after: Option<String>,
+        start_after: Option<HumanAddr>,
         limit: Option<u32>,
         order_by: Option<OrderBy>,
     },
     Shares {
-        start_after: Option<String>,
+        start_after: Option<HumanAddr>,
         limit: Option<u32>,
         order_by: Option<OrderBy>,
     },
@@ -117,12 +122,13 @@ pub enum QueryMsg {
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
 pub struct ConfigResponse {
-    pub owner: String,
-    pub mirror_token: String,
+    pub owner: HumanAddr,
+    pub mirror_token: HumanAddr,
     pub quorum: Decimal,
     pub threshold: Decimal,
     pub voting_period: u64,
     pub effective_delay: u64,
+    pub expiration_period: u64,
     pub proposal_deposit: Uint128,
     pub voter_weight: Decimal,
     pub snapshot_period: u64,
@@ -139,16 +145,16 @@ pub struct StateResponse {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, JsonSchema)]
 pub struct PollResponse {
     pub id: u64,
-    pub creator: String,
+    pub creator: HumanAddr,
     pub status: PollStatus,
     pub end_time: u64,
     pub title: String,
     pub description: String,
     pub link: Option<String>,
     pub deposit_amount: Uint128,
-    pub execute_data: Option<PollExecuteMsg>,
-    pub yes_votes: Uint128,     // balance
-    pub no_votes: Uint128,      // balance
+    pub execute_data: Option<ExecuteMsg>,
+    pub yes_votes: Uint128, // balance
+    pub no_votes: Uint128,  // balance
     pub abstain_votes: Uint128, // balance
     pub total_balance_at_end_poll: Option<Uint128>,
     pub voters_reward: Uint128,
@@ -176,7 +182,7 @@ pub struct StakerResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, JsonSchema)]
 pub struct SharesResponseItem {
-    pub staker: String,
+    pub staker: HumanAddr,
     pub share: Uint128,
 }
 
@@ -187,7 +193,7 @@ pub struct SharesResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, JsonSchema)]
 pub struct VotersResponseItem {
-    pub voter: String,
+    pub voter: HumanAddr,
     pub vote: VoteOption,
     pub balance: Uint128,
 }
@@ -214,7 +220,6 @@ pub enum PollStatus {
     Rejected,
     Executed,
     Expired,
-    Failed,
 }
 
 impl fmt::Display for PollStatus {

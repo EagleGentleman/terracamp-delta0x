@@ -1,18 +1,18 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::Uint128;
+use cosmwasm_std::{HumanAddr, Uint128};
 use cw20::Cw20ReceiveMsg;
 use terraswap::asset::Asset;
 
 use crate::common::OrderBy;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {}
+pub struct InitMsg {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum ExecuteMsg {
+pub enum HandleMsg {
     Receive(Cw20ReceiveMsg),
 
     ///////////////////////
@@ -53,7 +53,7 @@ pub enum QueryMsg {
         order_id: u64,
     },
     Orders {
-        bidder_addr: Option<String>,
+        bidder_addr: Option<HumanAddr>,
         start_after: Option<u64>,
         limit: Option<u32>,
         order_by: Option<OrderBy>,
@@ -64,7 +64,7 @@ pub enum QueryMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct OrderResponse {
     pub order_id: u64,
-    pub bidder_addr: String,
+    pub bidder_addr: HumanAddr,
     pub offer_asset: Asset,
     pub ask_asset: Asset,
     pub filled_offer_amount: Uint128,
