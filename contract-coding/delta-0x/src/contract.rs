@@ -1,12 +1,18 @@
 use cosmwasm_bignumber::{Decimal256, Uint256};
 use cosmwasm_std::{
-    to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier, StdError,
+    Decimal, to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier, StdError,
     StdResult, Storage, WasmMsg, HumanAddr, Coin, CosmosMsg, BankMsg, Uint128
 };
 
 use crate::msg::{CountResponse, HandleMsg, AnchorHandleMsg, InitMsg, QueryMsg};
 use crate::state::{config, config_read, State};
 use moneymarket::querier::{deduct_tax, query_balance, query_supply};
+use mirror_protocol::mint::{
+    Cw20HookMsg, PositionResponse, PositionsResponse,
+};
+use mirror_protocol::mint::HandleMsg as MirrorHandleMsg;
+use cw20::{Cw20HandleMsg, Cw20ReceiveMsg};
+use terraswap::asset::{Asset, AssetInfo};
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -57,7 +63,6 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
     // TODO: add a function to update anchor smart contract address
     // contract_addr from https://docs.anchorprotocol.com/smart-contracts/deployed-contracts
     let msg = AnchorHandleMsg::DepositStable {};
-
     let exec = WasmMsg::Execute {
         contract_addr: HumanAddr("terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal".to_string()),
         msg: to_binary(&msg)?,
@@ -67,38 +72,41 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
         })?],
     };
 
-    // Ok(vec![SubMsg::new(exec)])
+    let mirrorOpenPositionMsg = MirrorHandleMsg::OpenPosition {
+        collateral: Asset {
+            info: AssetInfo::Token {
+                // aUST on testnet
+                contract_addr: HumanAddr::from("terra1ajt556dpzvjwl0kl5tzku3fc3p3knkg9mkv8jl"),
+            },
+            amount: Uint128(1000000u128),
+        },
+        asset_info: AssetInfo::Token {
+            contract_addr: HumanAddr::from("terra1fdkfhgk433tar72t4edh6p6y9rmjulzc83ljuw"),
+        },
+        collateral_ratio: Decimal::percent(250),
+        short_params: None,
+    };
+    // let mirrorOpenPositionMsg = MirrorHandleMsg::Receive(Cw20ReceiveMsg {
+    //     msg: Some(
+    //         to_binary(&Cw20HookMsg::OpenPosition {
+    //             asset_info: AssetInfo::Token {
+    //                 // aUST on testnet
+    //                 contract_addr: HumanAddr::from("terra1ajt556dpzvjwl0kl5tzku3fc3p3knkg9mkv8jl"),
+    //             },
+    //             collateral_ratio: Decimal::percent(250),
+    //             short_params: None,
+    //         })
+    //         .unwrap(),
+    //     ),
+    //     sender: HumanAddr::from("addr0000"),
+    //     amount: Uint128(1000000u128),
+    // });
 
     Ok(HandleResponse {
         messages: vec![CosmosMsg::Wasm(exec)],
         data: None,
         log: vec![],
     })
-
-    // Ok(HandleResponse {
-    //     messages: vec![
-    //         CosmosMsg::Bank(BankMsg::Send {
-    //             from_address: env.contract.address,
-    //             to_address: HumanAddr("terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal".to_string()),
-    //             amount: vec![Coin {
-    //                 denom: config.stable_denom,
-    //                 amount: redeem_amount.into(),
-    //             }],
-    //         })
-    //     ],
-    //     data: None,
-    // })
-
-    // CosmosMsg::Bank(BankMsg::Send {
-    //     from_address: env.contract.address,
-    //     to_address: HumanAddr("terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal".to_string()),
-    //     amount: vec![Coin {
-    //         denom: config.stable_denom,
-    //         amount: redeem_amount.into(),
-    //     }],
-    // })
-
-    // Ok(HandleResponse::default())
 }
 
 pub fn handle<S: Storage, A: Api, Q: Querier>(
