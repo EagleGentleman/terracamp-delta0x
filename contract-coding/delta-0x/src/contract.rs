@@ -81,6 +81,7 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
             amount: Uint128(1000000u128),
         },
         asset_info: AssetInfo::Token {
+            // mSLV on testnet
             contract_addr: HumanAddr::from("terra1fdkfhgk433tar72t4edh6p6y9rmjulzc83ljuw"),
         },
         collateral_ratio: Decimal::percent(250),
