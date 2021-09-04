@@ -43,6 +43,30 @@
           "type": "object"
         }
       }
+    },
+    {
+      "type": "object",
+      "required": [
+        "open_mirror_position"
+      ],
+      "properties": {
+        "open_mirror_position": {
+          "type": "object",
+          "required": [
+            "amount"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            }
+          }
+        }
+      }
     }
-  ]
+  ],
+  "definitions": {
+    "Uint128": {
+      "type": "string"
+    }
+  }
 }

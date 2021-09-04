@@ -1,8 +1,9 @@
 use cosmwasm_bignumber::{Decimal256, Uint256};
-use cosmwasm_std::{
-    Decimal, to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier, StdError,
-    StdResult, Storage, WasmMsg, HumanAddr, Coin, CosmosMsg, BankMsg, Uint128
-};
+use cosmwasm_std::*;
+// {
+//     Decimal, to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier, StdError,
+//     StdResult, Storage, WasmMsg, QueryRequest, WasmQuery, HumanAddr, Coin, CosmosMsg, BankMsg, Uint128, from_binary
+// }
 
 use crate::msg::{CountResponse, HandleMsg, AnchorHandleMsg, InitMsg, QueryMsg};
 use crate::state::{config, config_read, State};
@@ -11,8 +12,9 @@ use mirror_protocol::mint::{
     Cw20HookMsg, PositionResponse, PositionsResponse,
 };
 use mirror_protocol::mint::HandleMsg as MirrorHandleMsg;
-use cw20::{Cw20HandleMsg, Cw20ReceiveMsg};
+use cw20::{Cw20HandleMsg};
 use terraswap::asset::{Asset, AssetInfo};
+use cosmwasm_storage::to_length_prefixed;
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -34,14 +36,6 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
     env: Env,
     // count: i32,
 ) -> StdResult<HandleResponse> {
-    // let api = &deps.api;
-    // config(&mut deps.storage).update(|mut state| {
-    //     if api.canonical_address(&env.message.sender)? != state.owner {
-    //         return Err(StdError::unauthorized());
-    //     }
-    //     state.count = count;
-    //     Ok(state)
-    // })?;
     let state = config_read(&deps.storage).load()?;
 
     let deposit_amount: Uint128 = env
@@ -72,36 +66,60 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
         })?],
     };
 
+    Ok(HandleResponse {
+        messages: vec![CosmosMsg::Wasm(exec)],
+        data: None,
+        log: vec![],
+    })
+}
+
+// pub fn try_open_mirror_position<S: Storage, A: Api, Q: Querier>(
+//     deps: &mut Extern<S, A, Q>,
+//     env: Env,
+//     amount: Uint128
+// ) -> StdResult<HandleResponse> {
+//     let state = config_read(&deps.storage).load()?;
+//     Ok(HandleResponse::default())
+// }
+
+pub fn try_open_mirror_position<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    amount: Uint128
+) -> StdResult<HandleResponse> {
+    let state = config_read(&deps.storage).load()?;
+
+    // send all of the user's aust funds in the contract to mirror
     let mirrorOpenPositionMsg = MirrorHandleMsg::OpenPosition {
         collateral: Asset {
             info: AssetInfo::Token {
                 // aUST on testnet
                 contract_addr: HumanAddr::from("terra1ajt556dpzvjwl0kl5tzku3fc3p3knkg9mkv8jl"),
             },
-            amount: Uint128(1000000u128),
+            amount: amount,
         },
         asset_info: AssetInfo::Token {
-            // mSLV on testnet
-            contract_addr: HumanAddr::from("terra1fdkfhgk433tar72t4edh6p6y9rmjulzc83ljuw"),
+            // mEth on testnet
+            contract_addr: HumanAddr::from("terra1ys4dwwzaenjg2gy02mslmc96f267xvpsjat7gx"),
         },
         collateral_ratio: Decimal::percent(250),
         short_params: None,
     };
-    // let mirrorOpenPositionMsg = MirrorHandleMsg::Receive(Cw20ReceiveMsg {
-    //     msg: Some(
-    //         to_binary(&Cw20HookMsg::OpenPosition {
-    //             asset_info: AssetInfo::Token {
-    //                 // aUST on testnet
-    //                 contract_addr: HumanAddr::from("terra1ajt556dpzvjwl0kl5tzku3fc3p3knkg9mkv8jl"),
-    //             },
-    //             collateral_ratio: Decimal::percent(250),
-    //             short_params: None,
-    //         })
-    //         .unwrap(),
-    //     ),
-    //     sender: HumanAddr::from("addr0000"),
-    //     amount: Uint128(1000000u128),
-    // });
+
+    // source: https://finder.terra.money/tequila-0004/tx/987678DDEFAC273C4164D01612547EFA4E91A2A6451F87FA499BA73BCAF06EF1
+    let msg = Cw20HandleMsg::Send {
+        contract: HumanAddr("terra1s9ehcjv0dqj2gsl72xrpp0ga5fql7fj7y3kq3w".to_string()), // mirror contract msg
+        msg: Some(to_binary(&mirrorOpenPositionMsg)?),
+        amount: amount
+    };
+
+    // source: https://docs.mirror.finance/networks
+    // source: https://finder.terra.money/tequila-0004/tx/987678DDEFAC273C4164D01612547EFA4E91A2A6451F87FA499BA73BCAF06EF1
+    let exec = WasmMsg::Execute {
+        contract_addr: HumanAddr("terra1ajt556dpzvjwl0kl5tzku3fc3p3knkg9mkv8jl".to_string()), // aust contract address
+        msg: to_binary(&msg)?,
+        send: vec![],
+    };
 
     Ok(HandleResponse {
         messages: vec![CosmosMsg::Wasm(exec)],
@@ -118,7 +136,8 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     match msg {
         HandleMsg::Increment {} => try_increment(deps, env),
         HandleMsg::Reset { count } => try_reset(deps, env, count),
-        HandleMsg::Deposit {} => try_deposit(deps, env)
+        HandleMsg::Deposit {} => try_deposit(deps, env),
+        HandleMsg::OpenMirrorPosition { amount } => try_open_mirror_position(deps, env, amount)
     }
 }
 
@@ -162,6 +181,13 @@ pub fn query<S: Storage, A: Api, Q: Querier>(
 fn query_count<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> StdResult<CountResponse> {
     let state = config_read(&deps.storage).load()?;
     Ok(CountResponse { count: state.count })
+}
+
+#[inline]
+fn concat(namespace: &[u8], key: &[u8]) -> Vec<u8> {
+    let mut k = namespace.to_vec();
+    k.extend_from_slice(key);
+    k
 }
 
 #[cfg(test)]
