@@ -42,3 +42,7 @@ cargo schema
 Copy the .wasm file in `/Users/stevenli/Documents/github/terracamp-delta0x/contract-coding/cosmwasm-examples/escrow/artifacts` to the `../deploy/artifacts` folder
 
 Update the `escrow_deploy.ts` script with the right msg (figure it out from the `/schema` folder)  & deploy
+
+# Packages
+
+Mirror v2 (columbus-4) was imported from here: https://github.com/Mirror-Protocol/mirror-contracts/releases

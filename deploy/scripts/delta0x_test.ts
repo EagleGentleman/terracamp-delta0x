@@ -10,8 +10,8 @@ import {
 } from "@terra-money/terra.js";
 import * as fs from "fs";
 
-const DEPLOYED_DELTA0X_ADDR = "terra1w43tx8xfp92pxs45e2r2nxsx4dy0tq4gk2z6sf";
-// https://finder.terra.money/tequila-0004/address/terra1w43tx8xfp92pxs45e2r2nxsx4dy0tq4gk2z6sf
+const DEPLOYED_DELTA0X_ADDR = "terra1q87lqyvy93z672mppdt8cpg9pa2d684j282eyq";
+// https://finder.terra.money/tequila-0004/address/terra1q87lqyvy93z672mppdt8cpg9pa2d684j282eyq
 
 (async () => {
   try {
@@ -39,7 +39,7 @@ const DEPLOYED_DELTA0X_ADDR = "terra1w43tx8xfp92pxs45e2r2nxsx4dy0tq4gk2z6sf";
       {
         deposit: {},
       },
-      { uusd: 10000 } // init coins
+      { uusd: 1000000 * 100 } // init coins
     );
     const depositTx = await wallet.createAndSignTx({
       msgs: [deposit],
@@ -66,6 +66,21 @@ const DEPLOYED_DELTA0X_ADDR = "terra1w43tx8xfp92pxs45e2r2nxsx4dy0tq4gk2z6sf";
             {"key":"module","value":"wasm"},{"key":"sender",
             "value":"terra1pk90dep5axrqcj9pj0vm7ted6pcz3t9d5vhpph"}]}]}]
     */
+    const openMirrorPosition = new MsgExecuteContract(
+      wallet.key.accAddress,
+      DEPLOYED_DELTA0X_ADDR,
+      {
+        open_mirror_position: {
+          amount: (1000000 * 50).toString()
+        },
+      },
+      // { uusd: 10000 } // init coins
+    );
+    const openMirrorPositionTx = await wallet.createAndSignTx({
+      msgs: [openMirrorPosition],
+    });
+    const openMirrorPositionTxResult = await terra.tx.broadcast(openMirrorPositionTx);
+    console.log("STEVENDEBUG openMirrorPositionTxResult ", openMirrorPositionTxResult);
   } catch (e) {
     console.log("STEVENDEBUG error ", e);
   }
