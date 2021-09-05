@@ -1,7 +1,3 @@
-# terracamp-delta0x
-
-delta0x project on terracamp hackathon
-
 # getting started
 
 for a quick intro to terra contracts and setting see [getting started](./getting-started/README.md)
